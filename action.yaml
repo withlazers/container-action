@@ -1,0 +1,84 @@
+name: Container
+description: >
+  Builds cointainers from uploaded artifacts
+inputs:
+  dockerfile:
+    description: "The Dockerfile to use"
+    required: true
+    default: "./Dockerfile.gh"
+  archs:
+    description: "Architectures to build"
+    required: true
+    default: "386, amd64, arm64, arm"
+  repository:
+    description: "repository name"
+    required: true
+  registry:
+    description: "registry name"
+    required: true
+    default: docker.io/withlazers
+  username:
+    description: "username for registry"
+    required: true
+    default: "withlazers"
+  password:
+    description: "password for registry"
+    required: true
+  tags:
+    description: "tags to push"
+    required: true
+    default: sha-${{ github.sha }} latest
+  ref-tags:
+    description: "reference tags tags to push"
+    required: true
+    default: ${{ github.ref_name }}
+
+runs:
+  using: composite
+  steps:
+  - name: Install qemu dependency
+    shell: bash
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y qemu-user-static
+
+  - name: Download all Artifact
+    uses: actions/download-artifact@v3
+    with:
+      path: artifacts
+
+  - name: Extract Artifact
+    shell: bash
+    run: |
+      for d in artifacts/*/; do
+        tar -C "$d" -xf "$d/"*.tar.gz
+      done
+      ln -sr artifacts/{i686,x86}-unknown-linux-musl
+      ln -sr artifacts/armv7-unknown-linux-musl{eabihf,}
+
+  - name: List artifacts
+    shell: bash
+    run: |
+      find artifacts
+
+  - name: Build Docker Image
+    id: build-image
+    uses: redhat-actions/buildah-build@v2
+    with:
+      archs: ${{ inputs.archs }}
+      image: ${{ inputs.repository }}
+      tags: >
+        ${{ inputs.tags }}
+        ${{ inputs.ref-tags }}
+      containerfiles: ${{ inputs.dockerfile }}
+
+  - name: Push to Dockerhub
+    if: startsWith(github.ref, 'refs/tags/v')
+    id: push-to-quay
+    uses: redhat-actions/push-to-registry@v2
+    with:
+      image: ${{ steps.build-image.outputs.image }}
+      tags: ${{ steps.build-image.outputs.tags }}
+      registry: ${{ inputs.registry }}
+      username: ${{ inputs.username }}
+      password: ${{ inputs.password }}
