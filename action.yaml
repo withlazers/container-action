@@ -75,8 +75,7 @@ runs:
       containerfiles: ${{ inputs.dockerfile }}
 
   - name: Push to Dockerhub
-    if: startsWith(github.ref, 'refs/tags/v')
-    id: push-to-quay
+    #if: startsWith(github.ref, 'refs/tags/v')
     uses: redhat-actions/push-to-registry@v2
     with:
       image: ${{ steps.build-image.outputs.image }}
