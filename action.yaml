@@ -54,6 +54,7 @@ runs:
         tar -C "$d" -xf "$d/"*.tar.gz
       done
       ln -sr artifacts/{i686,x86}-unknown-linux-musl
+      ln -sr artifacts/{x86_64,amd64}-unknown-linux-musl
       ln -sr artifacts/armv7-unknown-linux-musl{eabihf,}
       ln -sr artifacts/{aarch64,arm64}-unknown-linux-musl
 
