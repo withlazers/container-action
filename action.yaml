@@ -2,6 +2,9 @@ name: Container
 description: >
   Builds cointainers from uploaded artifacts
 inputs:
+  github_token:
+    description: "GITHUB_TOKEN"
+    required: true
   dockerfile:
     description: "The Dockerfile to use"
     required: true
@@ -90,4 +93,4 @@ runs:
       tags: "${{ steps.build-image.outputs.tags }}"
       registry: ghcr.io/${{ github.repository }}
       username: "${{ github.actor }}"
-      password: "${{ secrets.GITHUB_TOKEN }}"
+      password: "${{ inputs.github_token }}"
