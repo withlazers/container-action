@@ -5,6 +5,7 @@ inputs:
   token:
     description: "GITHUB_TOKEN"
     required: true
+    default: ""
   dockerfile:
     description: "The Dockerfile to use"
     required: true
@@ -87,6 +88,7 @@ runs:
       password: "${{ inputs.password }}"
 
   - name: Push to GHCR
+    if: ${{ inputs.token != '' }}
     uses: redhat-actions/push-to-registry@v2
     with:
       image: "${{ steps.build-image.outputs.image }}"
